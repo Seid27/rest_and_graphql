@@ -1,39 +1,41 @@
-const express = require('express');
+import express from 'express';
 const app = express();
 const port = 3000;
+import versionMiddleware from './middleware/versionMiddleware.js';
+import v1 from './routes/v1/users.js'
+import v2 from './routes/v2/users.js'
 
 app.listen(port, ()=>{
     console.log(`Server listening on port ${port}`);
     
 });
-
 app.use(express.json());
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({ extended: true }));
+app.use(versionMiddleware);
 
-const users = [{
-    id: '001',
-    first_name: 'John',
-    last_name: 'Doe'
-},{
-    id: '002',
-    first_name: 'Maria',
-    last_name: 'Jones'
-}];
-
-app.get('/users', (req, res)=>{
-    res.sendStatus(200).json({success: true, data: users});
-});
-
-app.get('/users/:id', (req, res)=>{
-    const user = users.find(({id})=> parseInt(id) == parseInt(req.params.id));
-    if (user) {
-        res.sendStatus(200).json({success: true, data: user});
-    }
-
-    else{
-        res.sendStatus(404).json({success: false, message: "User not found"});
+app.get('/users', (req, res, next)=>{
+    console.log( "in server", req.query.version);
+    
+    
+    if (req.apiVersion === '1') {
+        v1(req,res, next);
+    } else if (req.apiVersion === '2') {
+        v2(req,res, next);
     }
 });
+
+// app.get('/users/:id', versionMiddleware, (req, res)=>{
+//     const user = users.find(({id})=> parseInt(id) == parseInt(req.params.id));
+
+    
+//     if (user) {
+//         res.sendStatus(200).json({success: true, data: user});
+//     }
+
+//     else{
+//         res.sendStatus(404).json({success: false, message: "User not found"});
+//     }
+// });
 
 app.post('/users',(req,res)=>{
     console.log(req.body);
