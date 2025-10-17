@@ -2,6 +2,7 @@ import express from 'express';
 const router = express.Router();
 import users from "../../data/users.js";
 
+//api version 2 resources
 router.get('/users', (req,res)=>{
     const v2Users = users.map(u => ({
         id: u.id,
